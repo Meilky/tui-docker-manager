@@ -1,0 +1,9 @@
+[package]
+name = "docker-manager"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rs-docker = "0.0.60"
+tui = "0.17"
+crossterm = "0.22"
