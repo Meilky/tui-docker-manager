@@ -7,85 +7,26 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
 };
 use std::{
-    // error::Error,
     io,
     time::{Duration, Instant},
 };
 use tui::{
     backend::{Backend, CrosstermBackend},
-    layout::{Constraint, Direction, Layout},
-    // style::{Color, Modifier, Style},
-    //text::{Span, Spans},
-    widgets::{Block, Borders, ListState},
-    Frame, Terminal,
+    Terminal,
 };
 
-struct StatefulList<T> {
-    state: ListState,
-    items: Vec<T>,
-}
+mod ui;
+mod statefull_list;
+use statefull_list::StatefullList;
 
-impl<T> StatefulList<T> {
-    fn with_items(items: Vec<T>) -> StatefulList<T> {
-        StatefulList {
-            state: ListState::default(),
-            items,
-        }
-    }
-
-    fn next(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i >= self.items.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-
-    fn previous(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.items.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-
-    fn unselect(&mut self) {
-        self.state.select(None);
-    }
-}
-
-fn ui<B: Backend>(f: &mut Frame<B>) {
-    let chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .margin(1)
-        .constraints([Constraint::Percentage(20), Constraint::Percentage(80)].as_ref())
-        .split(f.size());
-    let block = Block::default().title("Block").borders(Borders::ALL);
-    f.render_widget(block, chunks[0]);
-    let block = Block::default().title("Block 2").borders(Borders::ALL);
-    f.render_widget(block, chunks[1]);
-}
-
-fn run_app<B: Backend, L>(
+fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     tick_rate: Duration,
-    list: &mut StatefulList<L>
+    mut list: StatefullList<String>,
 ) -> io::Result<()> {
     let mut last_tick = Instant::now();
     loop {
-        terminal.draw(|f| ui(f))?;
+        terminal.draw(|f| ui::render(f, &mut list))?;
 
         let timeout = tick_rate
             .checked_sub(last_tick.elapsed())
@@ -135,16 +76,17 @@ fn main() -> Result<(), io::Error> {
     let mut terminal = Terminal::new(backend)?;
 
     let tick_rate = Duration::from_millis(250);
-    let mut list = StatefulList::with_items(vec![
-    String::from("item1"),
-    String::from("item1"),
-]);
+    let list = StatefullList::with_items(vec![
+        String::from("Item0"),
+        String::from("Item1"),
+        String::from("Item2"),
+        String::from("Item3"),
+        String::from("Item4"),
+        String::from("Item5"),
+        String::from("Item6"),
+    ]);
 
-    run_app(&mut terminal, tick_rate,&mut list)?;
-
-    terminal.draw(|f| {
-        ui(f);
-    })?;
+    run_app(&mut terminal, tick_rate, list)?;
 
     // restore terminal
     disable_raw_mode()?;
