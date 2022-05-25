@@ -17,6 +17,7 @@ use tui::{
 mod statefull_list;
 mod ui;
 use statefull_list::StatefullList;
+mod store;
 
 fn run_tui<B: Backend>(
     terminal: &mut Terminal<B>,
@@ -47,6 +48,10 @@ fn run_tui<B: Backend>(
             last_tick = Instant::now();
         }
     }
+}
+
+fn callback() {
+    println!("{}", "allo");
 }
 
 fn main() -> Result<(), Error> {
